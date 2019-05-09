@@ -52,14 +52,14 @@ def filterVariables(variables={}, selection='Signal', verbose=False):
         appliesTo = var['appliesTo']
         for applyTo in appliesTo:
             if applyTo[-1]=="*":
-                if applyTo[0:-1] in selection: 
+                if applyTo[0:-1] in selection:
                     match = True
             else:
-                if applyTo==selection:  match = True                
-        if not match: 
+                if applyTo==selection:  match = True
+        if not match:
             delete_vars.append(ivar)
-    for ivar in delete_vars: 
-        del new_variables[ivar]  
+    for ivar in delete_vars:
+        del new_variables[ivar]
     if verbose: print '<<', new_variables
     return new_variables
 
@@ -70,19 +70,22 @@ def RDFprocess(outDir, inputFile, selections, sample):
     myselections = selections
     sample = sample
 
-    outputFile = "%s.root" % (sample_key) 
+    outputFile = "%s.root" % (sample_key)
+
 
     p = RDFtree(outputDir=outDir, outputFile = outputFile,inputFile=inputFile,pretend = pretend, syst = systematics)
 
       # create branches
-    for subsel_key, subsel in sample['subsel'].iteritems(): 
+    for subsel_key, subsel in sample['subsel'].iteritems():
+        print "!!!!DEBUG!!!!!! IN subsel_key=", subsel_key, "subsel=", subsel
         outputFiles.append("%s%s" % (sample_key, ('_'+subsel_key if subsel_key!='none' else '')) )
+        print "!!!!DEBUG!!!!!! outputfile in %s%s" % (sample_key, ('_'+subsel_key if subsel_key!='none' else ''))
         for sel_key, sel in myselections.iteritems():
             if len(sample['subsel'])>1 and subsel_key=='none': continue
             myvariables = filterVariables(variables, sel_key)
             print '\tBranching: subselection', bcolors.OKBLUE, subsel_key, bcolors.ENDC, 'with selection' , bcolors.OKBLUE, sel_key, bcolors.ENDC
             print '\tAdding variables for collections', bcolors.OKBLUE, myvariables.keys(), bcolors.ENDC
-           
+
             myselection = copy.deepcopy(sel)
             myselection[dataType]['cut'] += subsel if subsel_key!='none' else ''
             subsel_str= subsel if subsel_key!='none' else ''
@@ -90,7 +93,7 @@ def RDFprocess(outDir, inputFile, selections, sample):
                         nodeToEnd='controlPlots'+sel_key+subsel_str,
                         outputFile=outputFile,
                         modules = [controlPlots(selections=myselection, variables=myvariables, dataType=dataType, xsec=sample['xsec'], inputFile=inputFile)])
-    
+
     p.getOutput()
 
 
@@ -109,17 +112,23 @@ for cut in ['Signal', 'Sideband', 'Dimuon']:
 
 inputDir = ('/scratch/bertacch/NanoAOD%s-%s/' % (str(dataYear), tag))
 
-outDir =  'NanoAOD%s-%s/' % (str(dataYear), tag) 
-if not os.path.isdir(outDir): os.system('mkdir '+outDir) 
+outDir =  'NanoAOD%s-%s/' % (str(dataYear), tag)
+if not os.path.isdir(outDir): os.system('mkdir '+outDir)
 
 outputFiles = []
 
-parser = sampleParser(restrict= ['QCD_Pt-470to600_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8'])
+parser = sampleParser(restrict= ['QCD_Pt-470to600_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8', 'QCD_Pt-30to50_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8'])
+# parser = sampleParser(restrict=['WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8'])
+# parser = sampleParser()
 samples_dict = parser.getSampleDict()
 
 for sample_key, sample in samples_dict.iteritems():
-    for subsel_key, subsel in sample['subsel'].iteritems(): 
+    print "!!!!DEBUG!!!!!! OUT sample_key=", sample_key, "sample=", sample
+    for subsel_key, subsel in sample['subsel'].iteritems():
+        print "!!!!DEBUG!!!!!! OUT subsel_key=", subsel_key, "subsel=", subsel
         outputFiles.append("%s%s" % (sample_key, ('_'+subsel_key if subsel_key!='none' else '')) )
+        print "!!!!DEBUG!!!!!! outputfile out %s%s" % (sample_key, ('_'+subsel_key if subsel_key!='none' else ''))
+
 
 if rdf:
 
@@ -132,7 +141,7 @@ if rdf:
         print 'doing multiprocessing'
 
         if not sample['multiprocessing']: continue
-    
+
         dataType = 'MC' if 'Run' not in sample_key else 'DATA'
 
         print 'Analysing sample', bcolors.OKBLUE, sample_key, bcolors.ENDC
@@ -143,17 +152,17 @@ if rdf:
 
         inputFile = ROOT.std.vector("std::string")()
         for x in sample['dir']: inputFile.push_back(inputDir+x+"/tree*.root")
-            
+
         p = Process(target=RDFprocess, args=(outDir, inputFile, myselections,sample))
         p.start()
-        
+
         procs.append(p)
 
-    for p in procs:  
+    for p in procs:
         p.join()
-    
-    
-    ROOT.ROOT.EnableImplicitMT(24)
+
+
+    # ROOT.ROOT.EnableImplicitMT(24)
 
     for sample_key, sample in samples_dict.iteritems():
 
@@ -171,9 +180,9 @@ if rdf:
 
         inputFile = ROOT.std.vector("std::string")()
         for x in sample['dir']: inputFile.push_back(inputDir+x+"/tree*.root")
-            
+
         RDFprocess(outDir, inputFile, myselections, sample)
-        
+
 
 
 samples_merging = {
@@ -189,14 +198,38 @@ samples_merging = {
 print 'Samples to be merged:'
 print bcolors.OKBLUE, samples_merging, bcolors.ENDC
 
+# outputMergedFiles = []
+# for sel_key, sel in myselections.iteritems():
+#     print '!!!!DEBUG!!!! ----' , sel_key, sel
+#     for sample_merging_key, sample_merging in samples_merging.iteritems():
+#         if len(sample_merging)>0:
+#             outputMergedFiles.append( '%s_%s.root' % (sample_merging_key,sel_key))
+#             # print '!!!!DEBUG!!!! ----File name:  %s_%s.root' % (sample_merging_key,sel_key)
+#             cmd = 'hadd -f -k %s/%s_%s.root' % (outDir,sample_merging_key,sel_key)
+#             # print '!!!!DEBUG!!!! ----initial File name: %s/%s_%s.root' % (outDir,sample_merging_key,sel_key)
+#             for isample in sample_merging:
+#
+#                 cmd += ' %s/%s_%s.root' % (outDir,isample,sel_key)
+#                 # cmd += ' %s/%s_%s.root' % (outDir,sample_merging_key,sel_key)
+#                 # print '!!!!DEBUG!!!! ----isample', isample
+#                 # print '!!!!DEBUG!!!! ----File dir:  %s/%s_%s.root'% (outDir,isample,sel_key)
+#             if hadd:
+#                 print bcolors.OKGREEN, cmd, bcolors.ENDC
+#                 os.system(cmd)
+#
+# print 'Final samples:'
+# print bcolors.OKBLUE, outputMergedFiles, bcolors.ENDC
+
+
 outputMergedFiles = []
-for sel_key, sel in myselections.iteritems():
-    for sample_merging_key, sample_merging in samples_merging.iteritems():
+for sample_merging_key, sample_merging in samples_merging.iteritems():
         if len(sample_merging)>0:
-            outputMergedFiles.append( '%s_%s.root' % (sample_merging_key,sel_key))
-            cmd = 'hadd -f -k %s/%s_%s.root' % (outDir,sample_merging_key,sel_key)
+            outputMergedFiles.append( '%s.root' % (sample_merging_key))
+            cmd = 'hadd -f -k %s/%s.root' % (outDir,sample_merging_key)
             for isample in sample_merging:
-                cmd += ' %s/%s_%s.root' % (outDir,isample,sel_key)
+                cmd += ' %s/%s.root' % (outDir,isample)
+                print '!!!!DEBUG!!!! ----isample', isample
+
             if hadd:
                 print bcolors.OKGREEN, cmd, bcolors.ENDC
                 os.system(cmd)
@@ -204,16 +237,23 @@ for sel_key, sel in myselections.iteritems():
 print 'Final samples:'
 print bcolors.OKBLUE, outputMergedFiles, bcolors.ENDC
 
-   
+
+# if plot:
+#
+#     for sel_key, sel in myselections.iteritems():
+#
+#         print sel_key
+#         selected = [s for s in outputMergedFiles if sel_key in s]
+#
+#         plt = plotter(outdir=outDir+'/'+sel_key, folder=outDir, tag = sel_key, fileList=selected, norm = 35.922)
+#         plt.plotStack()
 
 if plot:
 
     for sel_key, sel in myselections.iteritems():
 
         print sel_key
-        selected = [s for s in outputMergedFiles if sel_key in s]
+        selected = [s for s in outputMergedFiles]
 
-        plt = plotter(outdir=outDir+'/'+sel_key, folder=outDir, tag = sel_key, fileList=selected, norm = 35.922)
+        plt = plotter(outdir=outDir+'/'+sel_key, folder=outDir, tag = sel_key, syst=systematics , fileList=selected, norm = 35.922)
         plt.plotStack()
-
-
