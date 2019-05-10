@@ -1,7 +1,7 @@
 import math
 
 # respect nanoAOD structure: Collection_modifiers_variable
-variables =  {        
+variables =  {
     'PV' : {
         'appliesTo' : ['Signal*','Sideband*','Dimuon'],
         'inputCollection' : 'PV',
@@ -22,12 +22,12 @@ variables =  {
             'Muon_corrected_MET_nom_uPer' :  ('uPer on Z (Rochester corr./smear MET)',  100, -100, 100),
             },
         },
-    'Muon1': { 
+    'Muon1': {
         'appliesTo' : ['Signal*','Sideband*','Dimuon'],
         'inputCollection' : 'Muon',
-        'newCollection': 'SelectedMuon1',  
+        'newCollection': 'SelectedMuon1',
         'index': 'Idx_mu1',
-        'variables': { 
+        'variables': {
             'corrected_pt':   ('muon p_{T} (Rochester corr.)',  100, 25, 65),
             'corrected_MET_uPar':   ('uPar (Rochester corr./smear MET)',  100, -100, 100),
             'corrected_MET_uPer':   ('uPer (Rochester corr./smear MET)',  100, -100, 100),
@@ -43,12 +43,12 @@ variables =  {
 
             },
     },
-    'Muon2': { 
+    'Muon2': {
         'appliesTo' : ['Dimuon'],
         'inputCollection' : 'Muon',
-        'newCollection': 'SelectedMuon2',  
+        'newCollection': 'SelectedMuon2',
         'index': 'Idx_mu2',
-        'variables': { 
+        'variables': {
             'corrected_pt':   ('muon p_{T} (Rochester corr.)',  100, 25, 65),
             'corrected_MET_nom_Wlikemt':   ('W-like M_{T} (Rochester corr./smear MET)',  100, 0, 200),
             'corrected_MET_uPar':   ('uPar (Rochester corr./smear MET)',  100, -100, 100),
@@ -60,5 +60,35 @@ variables =  {
             'sip3d':          ('sip3D', 100, 0, 5),
             'corrected_MET_nom_Wlikehpt': ('W-like recoil p_{T} (Rochester corr./smear MET)',  100, 0, 200),
             },
-    },    
+    },
+}
+
+
+bkg_variables = {
+    'Muon1': {
+        'appliesTo' : ['bkg_Signal*'],
+        'inputCollection' : 'Muon',
+        'newCollection': 'bkgSelMuon1',
+        'index': 'Idx_mu1',
+        'variables': {
+            'corrected_pt':   ('muon p_{T} (Rochester corr.)',  100, 25, 65),
+            'corrected_MET_nom_mt':   ('M_{T} (Rochester corr./smear MET)',  100, 0, 100),
+            'pfRelIso04_all': ('muon pfRelIso04', 100, 0., 0.5),
+            'pfRelIso04_all_TIMES_corrected_pt': ('muon pfIso04', 100, 0., 40),
+            'dxy':            ('muon dxy', 100, -0.01, 0.01),
+            'dz':             ('muon dz', 100, -0.05, 0.05),
+            'pfRelIso04_all_VS_corrected_MET_nom_mt':   ('M_{T} (Rochester corr./smear MET) VS muon pfRelIso04',  100, 0, 100,100, 0., 40),
+            'pfRelIso04_all_TIMES_corrected_pt_VS_corrected_MET_nom_mt':   ('M_{T} (Rochester corr./smear MET) VS muon pfIso04',  100, 0, 100, 100, 0., 40),
+            },
+    },
+    # 'Global' :{
+    #     'appliesTo' : ['bkg_Signal*'],
+    #     'inputCollection' : '',
+    #     'newCollection': 'Global_met',
+    #     'variables': {
+    #         'MET_pt':  ('MET P_{T} (smear MET)',  100, 0, 100),
+    #         'Muon_pfRelIso04_all:MET_pt':   ('M_{T} (Rochester corr./smear MET)',  100, 0, 100, 100, 0., 40),
+    #         'Muon_pfRelIso04_all*Muon_corrected_pt:MET_pt':   ('M_{T} (Rochester corr./smear MET)',  100, 0, 100, 100, 0., 40),
+    #     },
+    # }
 }

@@ -14,7 +14,7 @@ selections = {
                 ('Muon%s_MET%s_mt[Idx_mu1]>0. && ' % (muon, met) ) + \
                 'MET_filters==1 && ' + \
                 'nVetoElectrons==0 && ' + \
-                '1',            
+                '1',
             'weight' : 'Generator_weight*' +\
                 'puWeight*' + \
                 'Muon_Trigger_SF[Idx_mu1]*' + \
@@ -89,3 +89,34 @@ selections = {
             },
         },
     }
+
+bkg_selections = {
+    'bkg_Signal' : {
+        'MC' : {
+            'cut': \
+                'Vtype==0 && ' + \
+                'HLT_SingleMu24 && '+ \
+                ('Muon%s_pt[Idx_mu1]>25. && ' % muon) + \
+                ('Muon%s_MET%s_mt[Idx_mu1]>0. && ' % (muon, met) ) + \
+                'MET_filters==1 && ' + \
+                'nVetoElectrons==0 && ' + \
+                '1',
+            'weight' : 'Generator_weight*' +\
+                'puWeight*' + \
+                'Muon_Trigger_SF[Idx_mu1]*' + \
+                'Muon_ID_SF[Idx_mu1]*' + \
+                'Muon_ISO_SF[Idx_mu1]',
+            },
+        'DATA' : {
+            'cut': \
+                'Vtype==0 && ' + \
+                'HLT_SingleMu24 && ' + \
+                ('Muon%s_pt[Idx_mu1]>25. && ' % muon) + \
+                ('Muon%s_MET%s_mt[Idx_mu1]>0. && ' % (muon, met)) +\
+                'MET_filters==1 && ' + \
+                'nVetoElectrons==0 && ' + \
+                '1',
+            'weight' : '',
+            },
+        },
+}
