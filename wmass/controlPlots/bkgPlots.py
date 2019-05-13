@@ -170,11 +170,13 @@ class bkgPlots(module):
                                         secondSplitVarNameX = splittedVarName[1].split('_TIMES_')
                                         mergedVarNameX = dic['inputCollection']+'_'+secondSplitVarNameX[0]+'['+dic['index']+']'+'*'+dic['inputCollection']+'_'+secondSplitVarNameX[1]+'['+dic['index']+']'
                                     else : mergedVarNameX= dic['inputCollection']+'_'+splittedVarName[1]+'['+dic['index']+']'
+                                    if splittedVarName[1]=='MET_pt' : mergedVarNameX=splittedVarName[1] #TEMPORARY: ONLY FOR MET (DIFFERENT COLLECTION)
                                     self.d = self.d.Define(collectionName+'_'+var+'_X', '{vec}'.format(vec=mergedVarNameX))
                             elif '_VS_' in var : #a:b variables
                                     splittedVarName = var.split('_VS_')
                                     varNameY = dic['inputCollection']+'_'+splittedVarName[0]+'['+dic['index']+']'
                                     varNameX = dic['inputCollection']+'_'+splittedVarName[1]+'['+dic['index']+']'
+                                    if splittedVarName[1]=='MET_pt' : varNameX=splittedVarName[1] #TEMPORARY: ONLY FOR MET (DIFFERENT COLLECTION)
                                     self.d = self.d.Define(collectionName+'_'+var+'_Y', '{vec}'.format(vec=varNameY))
                                     self.d = self.d.Define(collectionName+'_'+var+'_X', '{vec}'.format(vec=varNameX))
                             elif '_TIMES_' in var : #a*b variable

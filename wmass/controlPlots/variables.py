@@ -66,29 +66,29 @@ variables =  {
 
 bkg_variables = {
     'Muon1': {
-        'appliesTo' : ['bkg_Signal*'],
+        'appliesTo' : ['bkg_Signal*', 'bkg_Sideband*'],
         'inputCollection' : 'Muon',
         'newCollection': 'bkgSelMuon1',
         'index': 'Idx_mu1',
         'variables': {
             'corrected_pt':   ('muon p_{T} (Rochester corr.)',  100, 25, 65),
-            'corrected_MET_nom_mt':   ('M_{T} (Rochester corr./smear MET)',  100, 0, 100),
+            'corrected_MET_nom_mt':   ('M_{T} (Rochester corr./smear MET)',  120, 0, 120),
             'pfRelIso04_all': ('muon pfRelIso04', 100, 0., 0.5),
-            'pfRelIso04_all_TIMES_corrected_pt': ('muon pfIso04', 100, 0., 40),
+            'pfRelIso04_all_TIMES_corrected_pt': ('muon pfIso04', 200, 0., 40),
             'dxy':            ('muon dxy', 100, -0.01, 0.01),
             'dz':             ('muon dz', 100, -0.05, 0.05),
-            'pfRelIso04_all_VS_corrected_MET_nom_mt':   ('M_{T} (Rochester corr./smear MET) VS muon pfRelIso04',  100, 0, 100,100, 0., 40),
-            'pfRelIso04_all_TIMES_corrected_pt_VS_corrected_MET_nom_mt':   ('M_{T} (Rochester corr./smear MET) VS muon pfIso04',  100, 0, 100, 100, 0., 40),
+            'pfRelIso04_all_VS_corrected_MET_nom_mt':   ('M_{T} (Rochester corr./smear MET) VS muon pfRelIso04',  120, 0, 120,100, 0., 0.5),
+            'pfRelIso04_all_TIMES_corrected_pt_VS_corrected_MET_nom_mt':   ('M_{T} (Rochester corr./smear MET) VS muon pfIso04',  120, 0, 120, 200, 0., 40),
+            'pfRelIso04_all_VS_MET_pt':   ('M_{T} (Rochester corr./smear MET)  VS muon pfRelIso04',  120, 0, 120, 100, 0., 0.5),
+            'pfRelIso04_all_TIMES_corrected_pt_VS_MET_pt':   ('M_{T} (Rochester corr./smear MET) VS muon pfIso04',  120, 0, 120, 200, 0., 40),
+
             },
     },
-    # 'Global' :{
-    #     'appliesTo' : ['bkg_Signal*'],
-    #     'inputCollection' : '',
-    #     'newCollection': 'Global_met',
-    #     'variables': {
-    #         'MET_pt':  ('MET P_{T} (smear MET)',  100, 0, 100),
-    #         'Muon_pfRelIso04_all:MET_pt':   ('M_{T} (Rochester corr./smear MET)',  100, 0, 100, 100, 0., 40),
-    #         'Muon_pfRelIso04_all*Muon_corrected_pt:MET_pt':   ('M_{T} (Rochester corr./smear MET)',  100, 0, 100, 100, 0., 40),
-    #     },
-    # }
+    'MET' :{
+        'appliesTo' : ['bkg_Signal*','bkg_Sideband*'],
+        'inputCollection' : 'MET',
+        'variables': {
+            'pt':  ('MET P_{T} (smear MET)',  120, 0, 120),
+        },
+    }
 }

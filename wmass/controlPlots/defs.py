@@ -8,6 +8,7 @@ import ROOT
 from RDFtreeV2 import RDFtree
 
 from controlPlots import *
+from bkgPlots import *
 from plotter import *
 
 from sampleParser import *
@@ -32,6 +33,7 @@ parser.add_argument('-hadd', '--hadd',type=int, default=False, help="")
 parser.add_argument('-plot', '--plot',type=int, default=False, help="")
 parser.add_argument('-rdf', '--rdf',type=int, default=True, help="")
 parser.add_argument('-pretend', '--pretend',type=bool, default=False, help="")
+parser.add_argument('-bkg', '--bkg',type=bool, default=False, help="produces the bkg plots instead of controlPlots")
 args = parser.parse_args()
 tag = args.tag
 dataYear = args.dataYear
@@ -39,6 +41,7 @@ hadd = args.hadd
 plot = args.plot
 rdf = args.rdf
 pretend = args.pretend
+bkg = args.bkg
 print "tag =", bcolors.OKGREEN, tag, bcolors.ENDC, \
     ", dataYear =", bcolors.OKGREEN, str(dataYear), bcolors.ENDC
 
@@ -77,37 +80,58 @@ def RDFprocess(outDir, inputFile, selections, sample):
 
       # create branches
     for subsel_key, subsel in sample['subsel'].iteritems():
-        print "!!!!DEBUG!!!!!! IN subsel_key=", subsel_key, "subsel=", subsel
-        outputFiles.append("%s%s" % (sample_key, ('_'+subsel_key if subsel_key!='none' else '')) )
-        print "!!!!DEBUG!!!!!! outputfile in %s%s" % (sample_key, ('_'+subsel_key if subsel_key!='none' else ''))
+        # print "!!!!DEBUG!!!!!! IN subsel_key=", subsel_key, "subsel=", subsel
+        # outputFiles.append("%s%s" % (sample_key, ('_'+subsel_key if subsel_key!='none' else '')) )
+        outputFiles.append("%s" % (sample_key))
+        # print "!!!!DEBUG!!!!!! outputfile IN %s" % (sample_key)
         for sel_key, sel in myselections.iteritems():
+            # print "!!!!DEBUG!!!!!! outputfile IN %s, %s" % (sel_key, sel)
             if len(sample['subsel'])>1 and subsel_key=='none': continue
-            myvariables = filterVariables(variables, sel_key)
+            if(not bkg) :
+                myvariables = filterVariables(variables, sel_key)
+            else :
+
+                myvariables = filterVariables(bkg_variables, sel_key)
+
             print '\tBranching: subselection', bcolors.OKBLUE, subsel_key, bcolors.ENDC, 'with selection' , bcolors.OKBLUE, sel_key, bcolors.ENDC
             print '\tAdding variables for collections', bcolors.OKBLUE, myvariables.keys(), bcolors.ENDC
 
             myselection = copy.deepcopy(sel)
             myselection[dataType]['cut'] += subsel if subsel_key!='none' else ''
             subsel_str= subsel if subsel_key!='none' else ''
-            p.branch(nodeToStart='input',
-                        nodeToEnd='controlPlots'+sel_key+subsel_str,
-                        outputFile=outputFile,
-                        modules = [controlPlots(selections=myselection, variables=myvariables, dataType=dataType, xsec=sample['xsec'], inputFile=inputFile)])
+            if(not bkg) :
+                p.branch(nodeToStart='input',
+                            nodeToEnd='controlPlots'+sel_key,#+subsel_str,
+                            outputFile=outputFile,
+                            modules = [controlPlots(selections=myselection, variables=myvariables, dataType=dataType, xsec=sample['xsec'], inputFile=inputFile)])
+            else :
+                p.branch(nodeToStart='input',
+                            nodeToEnd='controlPlots'+sel_key,#+subsel_str,
+                            outputFile=outputFile,
+                            modules = [bkgPlots(selections=myselection, variables=myvariables, dataType=dataType, xsec=sample['xsec'], inputFile=inputFile)])
 
     p.getOutput()
 
 
 myselections = {}
 
-for cut in ['Signal', 'Sideband', 'Dimuon']:
-    if cut=='Dimuon':
-        myselections['%s' % cut] = copy.deepcopy(selections['%s' % cut])
-        continue
-    myselections['%sPlus' % cut]  = copy.deepcopy(selections['%s' % cut])
-    myselections['%sMinus' % cut] = copy.deepcopy(selections['%s' % cut])
-    for d in ['MC','DATA']:
-        myselections['%sPlus' % cut][d]['cut']    += ' && Muon_charge[Idx_mu1]>0'
-        myselections['%sMinus' % cut][d]['cut']   += ' && Muon_charge[Idx_mu1]<0'
+if(not bkg) :
+    for cut in ['Signal', 'Sideband', 'Dimuon']:
+        if cut=='Dimuon':
+            myselections['%s' % cut] = copy.deepcopy(selections['%s' % cut])
+            continue
+        myselections['%sPlus' % cut]  = copy.deepcopy(selections['%s' % cut])
+        myselections['%sMinus' % cut] = copy.deepcopy(selections['%s' % cut])
+        for d in ['MC','DATA']:
+            myselections['%sPlus' % cut][d]['cut']    += ' && Muon_charge[Idx_mu1]>0'
+            myselections['%sMinus' % cut][d]['cut']   += ' && Muon_charge[Idx_mu1]<0'
+else :
+    for cut in ['bkg_Signal', 'bkg_Sideband']:
+        myselections['%sPlus' % cut]  = copy.deepcopy(bkg_selections['%s' % cut])
+        myselections['%sMinus' % cut] = copy.deepcopy(bkg_selections['%s' % cut])
+        for d in ['MC','DATA']:
+            myselections['%sPlus' % cut][d]['cut']    += ' && Muon_charge[Idx_mu1]>0'
+            myselections['%sMinus' % cut][d]['cut']   += ' && Muon_charge[Idx_mu1]<0'
 
 
 inputDir = ('/scratch/bertacch/NanoAOD%s-%s/' % (str(dataYear), tag))
@@ -116,18 +140,19 @@ outDir =  'NanoAOD%s-%s/' % (str(dataYear), tag)
 if not os.path.isdir(outDir): os.system('mkdir '+outDir)
 
 outputFiles = []
-
-parser = sampleParser(restrict= ['QCD_Pt-470to600_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8', 'QCD_Pt-30to50_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8'])
+parser = sampleParser(restrict= ['WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8','QCD_Pt-1000toInf_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8','QCD_Pt-1000toInf_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1','QCD_Pt-120to170_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8','QCD_Pt-15to20_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8','QCD_Pt-170to300_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8','QCD_Pt-170to300_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1','QCD_Pt-20to30_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8','QCD_Pt-300to470_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8','QCD_Pt-300to470_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1','QCD_Pt-300to470_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext2','QCD_Pt-30to50_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8','QCD_Pt-470to600_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8','QCD_Pt-470to600_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1','QCD_Pt-470to600_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext2','QCD_Pt-50to80_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8','QCD_Pt-600to800_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8','QCD_Pt-600to800_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1','QCD_Pt-800to1000_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8','QCD_Pt-800to1000_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1','QCD_Pt-800to1000_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext2','QCD_Pt-80to120_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8', 'QCD_Pt-80to120_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8_ext1'])
+# parser = sampleParser(restrict= ['QCD_Pt-470to600_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8', 'QCD_Pt-30to50_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8'])
 # parser = sampleParser(restrict=['WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8'])
 # parser = sampleParser()
 samples_dict = parser.getSampleDict()
 
 for sample_key, sample in samples_dict.iteritems():
-    print "!!!!DEBUG!!!!!! OUT sample_key=", sample_key, "sample=", sample
+    # print "!!!!DEBUG!!!!!! OUT sample_key=", sample_key, "sample=", sample
     for subsel_key, subsel in sample['subsel'].iteritems():
-        print "!!!!DEBUG!!!!!! OUT subsel_key=", subsel_key, "subsel=", subsel
-        outputFiles.append("%s%s" % (sample_key, ('_'+subsel_key if subsel_key!='none' else '')) )
-        print "!!!!DEBUG!!!!!! outputfile out %s%s" % (sample_key, ('_'+subsel_key if subsel_key!='none' else ''))
+        # print "!!!!DEBUG!!!!!! OUT subsel_key=", subsel_key, "subsel=", subsel
+        # outputFiles.append("%s%s" % (sample_key, ('_'+subsel_key if subsel_key!='none' else '')) )
+        outputFiles.append("%s" % (sample_key))
+        # print "!!!!DEBUG!!!!!! outputfile out %s%s" % (sample_key, ('_'+subsel_key if subsel_key!='none' else ''))
 
 
 if rdf:
@@ -186,7 +211,8 @@ if rdf:
 
 
 samples_merging = {
-    'WToMuNu'  : [x for x in outputFiles if ('WJets' and 'WToMuNu') in x],
+    # 'WToMuNu'  : [x for x in outputFiles if ('WJets' and 'WToMuNu') in x],
+    'WToMuNu'  : [x for x in outputFiles if ('WJets') in x],
     'WToETauNu'  : [x for x in outputFiles if ('WJets' and 'WToETauNu') in x],
     'DYJets' : [x for x in outputFiles if 'DYJetsToLL' in x],
     'QCD' : [x for x in outputFiles if 'QCD_' in x],
@@ -228,8 +254,7 @@ for sample_merging_key, sample_merging in samples_merging.iteritems():
             cmd = 'hadd -f -k %s/%s.root' % (outDir,sample_merging_key)
             for isample in sample_merging:
                 cmd += ' %s/%s.root' % (outDir,isample)
-                print '!!!!DEBUG!!!! ----isample', isample
-
+                # print '!!!!DEBUG!!!! ----isample', isample
             if hadd:
                 print bcolors.OKGREEN, cmd, bcolors.ENDC
                 os.system(cmd)
@@ -248,7 +273,7 @@ print bcolors.OKBLUE, outputMergedFiles, bcolors.ENDC
 #         plt = plotter(outdir=outDir+'/'+sel_key, folder=outDir, tag = sel_key, fileList=selected, norm = 35.922)
 #         plt.plotStack()
 
-if plot:
+if plot and (not bkg):
 
     for sel_key, sel in myselections.iteritems():
 
