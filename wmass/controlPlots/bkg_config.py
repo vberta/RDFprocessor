@@ -44,6 +44,7 @@ parser.add_argument('-fakerate', '--fakerate',type=int, default=False, help="")
 parser.add_argument('-fakerateVar', '--fakeVar',type=int, default=False, help="variation of tight and loose cut for fakerate")
 parser.add_argument('-fakeAna', '--fakeAna',type=int, default=False, help="complete bkg anaysis, with systematics")
 parser.add_argument('-fakeFinal', '--fakeFinal',type=int, default=False, help="comparison plots of systematic analysis")
+parser.add_argument('-fakeAnaCorr', '--fakeAnaCorr',type=int, default=False, help="complete bkg anaysis, with systematics with correlated Fit")
 parser.add_argument('-fakeSS', '--fakeSS',type=int, default=False, help="strategy systemtatics plots")
 parser.add_argument('-fakeSyst', '--fakeSyst',type=int, default=False, help="input systemtatics plots")
 parser.add_argument('-rdf', '--rdf',type=int, default=True, help="")
@@ -52,6 +53,8 @@ parser.add_argument('-restrict', '--restrict',type=str, default="", help="")
 parser.add_argument('-wpt', '--wpt',type=int, default=False, help="W pt rewight option studies (to evaluate weight)")
 parser.add_argument('-wptRew', '--wptRew',type=int, default=False, help="W pt rewight option")
 parser.add_argument('-clousure', '--clousure',type=int, default=False, help="produce clousure histos (RDF)")
+
+
 
 
 args = parser.parse_args()
@@ -63,6 +66,7 @@ fakerate = args.fakerate
 fakerateVar = args.fakeVar
 fakerateAnalysis = args.fakeAna
 fakerateFinalPlots = args.fakeFinal
+fakerateCorrelatedFit = args.fakeAnaCorr
 fakerateStraSyst = args.fakeSS
 fakerateSyst = args.fakeSyst
 rdf = args.rdf
@@ -192,8 +196,15 @@ inputDir = ('/scratch/sroychow/NanoAOD%s-%s/' % (str(dataYear), tag))
 
 # outDir =  'NanoAOD%s-%s_ptStudy_syst/' % (str(dataYear), tag)
 
-# outDir =  'NanoAOD%s-%s_fast_syst/' % (str(dataYear), tag)
-outDir =  'NanoAOD%s-%s_fast_DoubleCorrelated/' % (str(dataYear), tag)
+# outDir =  'NanoAOD%s-%s_fast_syst/' % (str(dataYear), tag) #correlated fit in nom only
+# outDir =  'NanoAOD%s-%s_fast_DoubleCorrelated/' % (str(dataYear), tag) #correlated fit in all syst
+# outDir =  'NanoAOD%s-%s_fast_LargeEtaBins/' % (str(dataYear), tag) #deltaEra=0.3
+# outDir =  'NanoAOD%s-%s_fast_VeryLargeEtaBins/' % (str(dataYear), tag) #deltaeta=0.6
+# outDir =  'NanoAOD%s-%s_fast_LinearUncorr/' % (str(dataYear), tag) #deltaeta=0.6
+# outDir =  'NanoAOD%s-%s_fast_LargeEtaPtBins/' % (str(dataYear), tag) #deltaeta=0.4,deltaPt=4
+outDir =  'NanoAOD%s-%s_fast_TEST_largeBins/' % (str(dataYear), tag) #deltaeta=0.4,deltaPt=4 for testing purpose (EW asymmetry)
+# outDir =  'NanoAOD%s-%s_LoreHistos/' % (str(dataYear), tag) #new histos from lorenzo
+
 
 
 
@@ -306,13 +317,15 @@ for sample_merging_key, sample_merging_value in samples_merging.iteritems():
 print 'Final samples:'
 print bcolors.OKBLUE, outputMergedFiles, bcolors.ENDC
 
-def fakerate_analysis(systName='nom',systKind='nom', outdir=outDir+'/bkg',folder=outDir,norm = 35.922, tightCut = 0.15, looseCut=40, fitOnTemplate=True, ptBinning=ptBinning, etaBinning=etaBinning, onData=True, slicing=True,fakerate=True,variations=fakerateVar, tightCutList=[0.02, 0.05, 0.10, 0.15, 0.2, 0.3, 0.5],looseCutList=[10,20,30,35,40,45,50,60,70,80], parabolaFit = False, EWSF='Fit',correlatedFit=False,fastHistos=False, extraValidationPlots = False) :
+def fakerate_analysis(systName='nom',systKind='nom', outdir=outDir+'/bkg',folder=outDir,norm = 35.922, tightCut = 0.15, looseCut=40, fitOnTemplate=True, ptBinning=ptBinning, etaBinning=etaBinning, onData=True, slicing=True,fakerate=True,variations=fakerateVar, tightCutList=[0.02, 0.05, 0.10, 0.15, 0.2, 0.3, 0.5],looseCutList=[10,20,30,35,40,45,50,60,70,80], parabolaFit = False, EWSF='Iso_pt',correlatedFit=False,fastHistos=False, extraValidationPlots = False,statAna=False) :
     # possible EWSF option: Fit, Fit_pt, Iso_pt, Mt, Mt_pt, 1, 0
+    #if fastHistos=True also: Iso_global
+    # if LoreHistos = True also: Mt_global
     outdirBkg = outdir+'/bkg_'+systName
     if not os.path.isdir(outdirBkg): os.system('mkdir '+outdirBkg)
-    if not os.path.isdir(outdirBkg+'_plot'): os.system('mkdir '+outdirBkg+'_plot')
+    # if not os.path.isdir(outdirBkg+'_plot'): os.system('mkdir '+outdirBkg+'_plot')
 
-    fake = bkg_fakerateAnalyzer(outdir=outdirBkg, folder=folder,norm = norm, fitOnTemplate=fitOnTemplate, ptBinning=ptBinning, etaBinning=etaBinning, onData=onData, slicing=slicing,systName=systName,systKind=systKind, parabolaFit=parabolaFit, EWSF=EWSF,tightCut = tightCut, looseCut=looseCut,fastHistos=fastHistos, extraValidationPlots=extraValidationPlots,correlatedFit=correlatedFit)#, tightCut = 5, varFake='pfRelIso04_all_corrected_pt_corrected_MET_nom_mt')
+    fake = bkg_fakerateAnalyzer(outdir=outdirBkg, folder=folder,norm = norm, fitOnTemplate=fitOnTemplate, ptBinning=ptBinning, etaBinning=etaBinning, onData=onData, slicing=slicing,systName=systName,systKind=systKind, parabolaFit=parabolaFit, EWSF=EWSF,tightCut = tightCut, looseCut=looseCut,fastHistos=fastHistos, extraValidationPlots=extraValidationPlots,correlatedFit=correlatedFit,statAna=statAna)#, tightCut = 5, varFake='pfRelIso04_all_corrected_pt_corrected_MET_nom_mt')
     # fake.integrated_preliminary()
     fake.differential_preliminary(fakerate=fakerate, correlatedFit=correlatedFit, produce_ext_output=True)
 
@@ -345,29 +358,50 @@ if fakerate :
     NORM = 35.922
     FASTHISTOS=True
     EXTRAVALPLOT = False
-    CORRFIT = True
-
+    CORRFIT = False # this option is for nom only correlated fit
+    STATANA = False
+    CORRFITFINAL= False #correlated fit in the final plots
+    EWKSF='Iso_global'
 
     if fakerateAnalysis :
-        print "->Full Analysis Path..."
-        fakerate_analysis(systName='nom',systKind='nom', EWSF='Iso_pt', tightCutList=tightCutList,looseCutList=looseCutList, parabolaFit=PARFIT, looseCut=LCUT, tightCut = TCUT, slicing = True,fitOnTemplate=True, correlatedFit=False, fastHistos=FASTHISTOS, extraValidationPlots=EXTRAVALPLOT)
+        print "--> Not correlated analysis path..."
+        fakerate_analysis(systName='nom',systKind='nom', norm=NORM, tightCutList=tightCutList,looseCutList=looseCutList, parabolaFit=PARFIT, looseCut=LCUT, tightCut = TCUT, slicing = True, fastHistos=FASTHISTOS, extraValidationPlots=EXTRAVALPLOT,  correlatedFit=False, EWSF=EWKSF)
         for sKind, sList in bkg_systematics.iteritems():
             for sName in sList :
-                print "->systematatic:", sKind,sName
+                print "-> systematatic:", sKind,sName
                 if fakerateSyst :
-                    fakerate_analysis(systKind=sKind,systName=sName,tightCutList=tightCutList,looseCutList=looseCutList,EWSF='Iso_pt', parabolaFit=PARFIT, looseCut=LCUT, tightCut = TCUT,slicing = True,fastHistos=FASTHISTOS, extraValidationPlots=EXTRAVALPLOT,correlatedFit=False)
-
+                    fakerate_analysis(systKind=sKind,systName=sName,norm=NORM, tightCutList=tightCutList,looseCutList=looseCutList, parabolaFit=PARFIT, looseCut=LCUT, tightCut = TCUT,slicing = True,fastHistos=FASTHISTOS, extraValidationPlots=EXTRAVALPLOT,correlatedFit=False, EWSF=EWKSF)
+    
+    if fakerateCorrelatedFit :
+        print "--> Correlated analysis path..."
+        fakerate_analysis(systName='nom',systKind='nom', norm=NORM, tightCutList=tightCutList,looseCutList=looseCutList, parabolaFit=PARFIT, looseCut=LCUT, tightCut = TCUT, slicing = False, fastHistos=FASTHISTOS, extraValidationPlots=EXTRAVALPLOT, correlatedFit=True,EWSF=EWKSF)
+        if STATANA :
+            print "-> statistical uncertainity analysis..."
+            fakerate_analysis(systName='nom',systKind='nom', norm=NORM, tightCutList=tightCutList,looseCutList=looseCutList, parabolaFit=PARFIT, looseCut=LCUT, tightCut = TCUT, slicing = False, fastHistos=FASTHISTOS, extraValidationPlots=EXTRAVALPLOT, correlatedFit=True, statAna=STATANA,EWSF=EWKSF)
+        for sKind, sList in bkg_systematics.iteritems():
+            for sName in sList :
+                print "-> systematatic:", sKind,sName
+                if fakerateSyst :
+                    fakerate_analysis(systKind=sKind,systName=sName,norm=NORM, tightCutList=tightCutList,looseCutList=looseCutList, parabolaFit=PARFIT, looseCut=LCUT, tightCut = TCUT,slicing = False, fastHistos=FASTHISTOS, extraValidationPlots=EXTRAVALPLOT,correlatedFit=True, EWSF=EWKSF)
+    
     if fakerateFinalPlots :
-        print "-> Final plots..."
-        fakeFinal = bkg_fakerateAnalyzer(outdir=outDir+'/bkg/bkg_nom', folder=outDir,norm = NORM, fitOnTemplate=True, ptBinning=ptBinning, etaBinning=etaBinning, onData=True, slicing=False, systName='nom',systKind='nom', parabolaFit=PARFIT,EWSF='Iso_pt', tightCut=TCUT, looseCut=LCUT, fastHistos=FASTHISTOS, extraValidationPlots=EXTRAVALPLOT, correlatedFit=CORRFIT)
-        fakeFinal.differential_preliminary(fakerate=fakerate, correlatedFit=CORRFIT, produce_ext_output=True)
-        fakeFinal.fakerate_plots(variations=fakerateVar,tightCutList=tightCutList,looseCutList=looseCutList, parabolaFit = PARFIT,correlatedFit=CORRFIT)
-        fakeFinal.finalPlots(systDict=bkg_systematics, sum2Bands=True, outDir=outDir+'/bkg/',correlatedFit=CORRFIT, noratio=False, correlatedFit_alreadyDone=True)
+        print "--> Final plots..."
+        fakeFinal = bkg_fakerateAnalyzer(outdir=outDir+'/bkg/bkg_nom', folder=outDir,norm = NORM, fitOnTemplate=True, ptBinning=ptBinning, etaBinning=etaBinning, onData=True, slicing=False, systName='nom',systKind='nom', parabolaFit=PARFIT,EWSF=EWSF, tightCut=TCUT, looseCut=LCUT, fastHistos=FASTHISTOS, extraValidationPlots=EXTRAVALPLOT, correlatedFit=CORRFITFINAL)
+        fakeFinal.finalPlots(systDict=bkg_systematics, SymBands=True, outDir=outDir+'/bkg/',correlatedFit=CORRFIT, noratio=False, correlatedFit_alreadyDone=True, statAna=STATANA)
+
+        
+    #OLD FINAL PLOTS, fix folder sistem and remove me! 
+    # if fakerateFinalPlots :
+    #     print "-> Final plots..."
+    #     fakeFinal = bkg_fakerateAnalyzer(outdir=outDir+'/bkg/bkg_nom', folder=outDir,norm = NORM, fitOnTemplate=True, ptBinning=ptBinning, etaBinning=etaBinning, onData=True, slicing=False, systName='nom',systKind='nom', parabolaFit=PARFIT,EWSF='Iso_pt', tightCut=TCUT, looseCut=LCUT, fastHistos=FASTHISTOS, extraValidationPlots=EXTRAVALPLOT, correlatedFit=CORRFIT)
+    #     fakeFinal.differential_preliminary(fakerate=fakerate, correlatedFit=CORRFIT, produce_ext_output=True)
+    #     fakeFinal.fakerate_plots(variations=fakerateVar,tightCutList=tightCutList,looseCutList=looseCutList, parabolaFit = PARFIT,correlatedFit=CORRFIT)
+    #     fakeFinal.finalPlots(systDict=bkg_systematics, SymBands=True, outDir=outDir+'/bkg/',correlatedFit=CORRFIT, noratio=False, correlatedFit_alreadyDone=True)
         
         # fakeFinal.clousure_plots(outdir=outDir+'/bkg/', MC=False)
 
     if fakerateStraSyst :
-        print "-> Strategy syst plots..."
+        print "--> Strategy syst plots..."
         fakeFinal.strategy_syst(preOutDir=outDir)
 
 
