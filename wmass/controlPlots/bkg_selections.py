@@ -141,8 +141,8 @@ mtBinning = [0,30,200]
 # etaBinning = [-2.4,-2.1,-1.8,-1.5,-1.2,-0.9,-0.6,-0.3,0,0.3,0.6,0.9,1.2,1.5,1.8,2.1,2.4] #largeEtaBins analysis for systematics
 # etaBinning = [-2.4,-1.8,-1.2,-0.6,0,0.6,1.2,1.8,2.4] #VeryLargeEtaBins analysis for systematics
 # [26,28,30,32,34,36,38,40,42,44,47,50,53,56,59,62,65] #used in correlated Fit
-etaBinning = [-2.4,-2.0,-1.6,-1.2,-0.8,-0.4,0.0,0.4,0.8,1.2,1.6,2.0,2.4]#LargeEtaPtBins
-ptBinning = [25,29,33,37,41,45,49,53,57,61,65] #LargeEtaPtBins
+# etaBinning = [-2.4,-2.0,-1.6,-1.2,-0.8,-0.4,0.0,0.4,0.8,1.2,1.6,2.0,2.4]#LargeEtaPtBins
+# ptBinning = [25,29,33,37,41,45,49,53,57,61,65] #LargeEtaPtBins
 
 #TESTING ONES
 # ptBinning = [25,26,27,28,29,30]
