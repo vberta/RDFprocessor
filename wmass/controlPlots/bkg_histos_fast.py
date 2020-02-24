@@ -111,6 +111,8 @@ class bkg_histos_fast(module):
                     
 
             elif "nom" in self.systKind or "corrected" in self.systKind :
+                print 'ERROR: there is a bug here (look to the code). nom and corrected not applied'
+                # for some reason this part doesn't work, nom and corrected are not applied in hMain (but in hEWKSF yes), solve this issue!!
                 self.dictReplacerVar(self.systKind,self.systName)
                 self.selection = self.selection.replace(self.systKind,self.systName)            
                 varMT = varMT.replace(self.systKind,self.systName)
