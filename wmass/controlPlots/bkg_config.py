@@ -382,7 +382,7 @@ if fakerate :
     NOM = ['nominal','']
     # NOM = ['nom','nom']
     ULTRAFAST = True
-    EXTRAP = True #extrapolation syst
+    EXTRAP = False #extrapolation syst
     
     # preparator = bkg_prepareHistos(outDir=outDir+'/', inputDir=outDir+'/rawInput/',ultraFast = ULTRAFAST)
     # preparator.prepare()
@@ -390,7 +390,7 @@ if fakerate :
 
     if fakerateAnalysis :
         print "--> Not correlated analysis path:"
-        # fakerate_analysis(systName=NOM[1],systKind=NOM[0], norm=NORM, tightCutList=tightCutList,looseCutList=looseCutList, parabolaFit=PARFIT, looseCut=LCUT, tightCut = TCUT, slicing = True, fastHistos=FASTHISTOS, extraValidationPlots=EXTRAVALPLOT,  correlatedFit=False, EWSF=EWKSF, template = TEMPLATE, ultraFast=ULTRAFAST)
+        fakerate_analysis(systName=NOM[1],systKind=NOM[0], norm=NORM, tightCutList=tightCutList,looseCutList=looseCutList, parabolaFit=PARFIT, looseCut=LCUT, tightCut = TCUT, slicing = True, fastHistos=FASTHISTOS, extraValidationPlots=EXTRAVALPLOT,  correlatedFit=False, EWSF=EWKSF, template = TEMPLATE, ultraFast=ULTRAFAST)
         if SF_EVAL :
             fakerate_analysis(systName=NOM[1],systKind=NOM[0], norm=NORM, tightCutList=tightCutList,looseCutList=looseCutList, parabolaFit=PARFIT, looseCut=LCUT, tightCut = TCUT, slicing = True, fastHistos=FASTHISTOS, extraValidationPlots=EXTRAVALPLOT,  correlatedFit=False, EWSF=EWKSF, nameSuff='_noIsoSF_',template = TEMPLATE, ultraFast=ULTRAFAST)
         if fakerateSyst :
@@ -423,8 +423,7 @@ if fakerate :
         fakeFinal = bkg_fakerateAnalyzer(outdir=outDir+'/bkg/bkg_'+NOM[1], folder=outDir,norm = NORM, fitOnTemplate=True, ptBinning=ptBinning, etaBinning=etaBinning, onData=True, slicing=False, systName=NOM[1],systKind=NOM[0], parabolaFit=PARFIT,EWSF=EWKSF, tightCut=TCUT, looseCut=LCUT, fastHistos=FASTHISTOS, extraValidationPlots=EXTRAVALPLOT, correlatedFit=CORRFITFINAL,ultraFast=ULTRAFAST)#,  nameSuff='_noIsoSF_')
         fakeFinal.preliminary_tasks()
         fakeFinal.finalPlots(systDict=bkg_systematics, SymBands=True, outDir=outDir+'/bkg/',correlatedFit=CORRFIT, noratio=False, correlatedFit_alreadyDone=True, statAna=STATANA)
-
-        
+  
     #OLD FINAL PLOTS, fix folder sistem and remove me! 
     # if fakerateFinalPlots :
     #     print "-> Final plots..."
